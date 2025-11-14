@@ -39,9 +39,11 @@ const MenuAlimentarForm: React.FC<MenuAlimentarFormProps> = ({ onClose, onComple
     
     // Step 9: Alergias
     allergies: [] as string[],
+    allergiesOther: '',
     
     // Step 10: Intolerâncias
     intolerances: [] as string[],
+    intolerancesOther: '',
     
     // Step 11: Aversões alimentares
     aversions: '',
@@ -71,6 +73,16 @@ const MenuAlimentarForm: React.FC<MenuAlimentarFormProps> = ({ onClose, onComple
     const preferencesArray = data.preferences
       ? data.preferences.split(',').map(p => p.trim()).filter(p => p)
       : [];
+    
+    // Processar alergias - se "Outros" está selecionado, usar o texto; senão, usar array
+    const allergiesArray = data.allergies.includes('Outros')
+      ? (data.allergiesOther ? data.allergiesOther.split(',').map(a => a.trim()).filter(a => a) : [])
+      : data.allergies.filter(a => a !== 'Outros');
+    
+    // Processar intolerâncias - se "Outros" está selecionado, usar o texto; senão, usar array
+    const intolerancesArray = data.intolerances.includes('Outros')
+      ? (data.intolerancesOther ? data.intolerancesOther.split(',').map(i => i.trim()).filter(i => i) : [])
+      : data.intolerances.filter(i => i !== 'Outros');
 
     // Construir payload com apenas campos obrigatórios
     return {
@@ -93,8 +105,8 @@ const MenuAlimentarForm: React.FC<MenuAlimentarFormProps> = ({ onClose, onComple
       },
       dietary_restrictions_and_habits: {
         diet_type: data.dietType,
-        allergies: data.allergies,
-        intolerances: data.intolerances,
+        allergies: allergiesArray,
+        intolerances: intolerancesArray,
         aversions: aversionsArray,
         preferences: preferencesArray
       },
@@ -613,10 +625,11 @@ const MenuAlimentarForm: React.FC<MenuAlimentarFormProps> = ({ onClose, onComple
           'Soja',
           'Peixe',
           'Frutos do mar',
-          'Glúten'
+          'Outros'
         ].map((allergy) => (
           <button
             key={allergy}
+            type="button"
             onClick={() => handleAllergyToggle(allergy)}
             className={`p-3 rounded-lg border-2 transition-colors text-sm ${
               formData.allergies.includes(allergy)
@@ -629,9 +642,31 @@ const MenuAlimentarForm: React.FC<MenuAlimentarFormProps> = ({ onClose, onComple
         ))}
       </div>
       
+      {/* Caixa de texto para "Outros" */}
+      {formData.allergies.includes('Outros') && (
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Especifique as outras alergias:</label>
+          <textarea
+            placeholder="Liste as alergias, separadas por vírgula (ex: glúten, corantes, conservantes)"
+            value={formData.allergiesOther}
+            onChange={(e) => handleInputChange('allergiesOther', e.target.value)}
+            className="w-full p-4 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+            rows={3}
+          />
+        </div>
+      )}
+      
       <button
-        onClick={() => handleInputChange('allergies', [])}
-        className="w-full p-3 rounded-lg border border-gray-300 text-gray-600 text-sm hover:bg-gray-50"
+        type="button"
+        onClick={() => {
+          handleInputChange('allergies', []);
+          handleInputChange('allergiesOther', '');
+        }}
+        className={`w-full p-3 rounded-lg border-2 transition-colors text-sm ${
+          formData.allergies.length === 0
+            ? 'bg-primary/10 border-primary text-primary'
+            : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+        }`}
       >
         Não tenho alergias
       </button>
@@ -653,12 +688,11 @@ const MenuAlimentarForm: React.FC<MenuAlimentarFormProps> = ({ onClose, onComple
           'Lactose',
           'Glúten',
           'Frutose',
-          'Sacarose',
-          'Sorbitol',
-          'Histamina'
+          'Outros'
         ].map((intolerance) => (
           <button
             key={intolerance}
+            type="button"
             onClick={() => handleIntoleranceToggle(intolerance)}
             className={`p-3 rounded-lg border-2 transition-colors text-sm ${
               formData.intolerances.includes(intolerance)
@@ -671,9 +705,31 @@ const MenuAlimentarForm: React.FC<MenuAlimentarFormProps> = ({ onClose, onComple
         ))}
       </div>
       
+      {/* Caixa de texto para "Outros" */}
+      {formData.intolerances.includes('Outros') && (
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Especifique as outras intolerâncias:</label>
+          <textarea
+            placeholder="Liste as intolerâncias, separadas por vírgula (ex: sorbitol, sacarose, histamina)"
+            value={formData.intolerancesOther}
+            onChange={(e) => handleInputChange('intolerancesOther', e.target.value)}
+            className="w-full p-4 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+            rows={3}
+          />
+        </div>
+      )}
+      
       <button
-        onClick={() => handleInputChange('intolerances', [])}
-        className="w-full p-3 rounded-lg border border-gray-300 text-gray-600 text-sm hover:bg-gray-50"
+        type="button"
+        onClick={() => {
+          handleInputChange('intolerances', []);
+          handleInputChange('intolerancesOther', '');
+        }}
+        className={`w-full p-3 rounded-lg border-2 transition-colors text-sm ${
+          formData.intolerances.length === 0
+            ? 'bg-primary/10 border-primary text-primary'
+            : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+        }`}
       >
         Não tenho intolerâncias
       </button>
