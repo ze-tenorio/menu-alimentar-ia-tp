@@ -114,6 +114,12 @@ export interface MenuApiResponse {
 const API_URL = 'https://e2kqx2zwtc.execute-api.us-east-2.amazonaws.com/dev/meal-plan-agent';
 
 /**
+ * API Key para autenticação
+ * Deve ser configurada na variável de ambiente VITE_API_KEY
+ */
+const API_KEY = import.meta.env.VITE_API_KEY;
+
+/**
  * Gera um menu alimentar personalizado através da API de IA
  * 
  * @param payload - Dados do paciente e preferências alimentares
@@ -150,6 +156,7 @@ export async function generateMenu(payload: MenuApiPayload): Promise<MenuApiResp
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'API-Key': API_KEY,
       },
       body: JSON.stringify(payload),
     });
