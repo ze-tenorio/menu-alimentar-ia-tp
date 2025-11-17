@@ -156,7 +156,7 @@ export async function generateMenu(payload: MenuApiPayload): Promise<MenuApiResp
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'API-Key': API_KEY,
+        'x-api-key': API_KEY,
       },
       body: JSON.stringify(payload),
     });
