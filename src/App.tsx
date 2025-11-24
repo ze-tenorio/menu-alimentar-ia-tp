@@ -337,7 +337,10 @@ const App = () => {
           title: menu.title,
           objective: menu.objective,
           date: menu.date,
-          type: menu.type
+          type: menu.type,
+          daily_energy_kcal: menu.daily_energy_kcal,
+          current_weight: menu.current_weight,
+          age: menu.age
         }))
       : createdMenus;
       

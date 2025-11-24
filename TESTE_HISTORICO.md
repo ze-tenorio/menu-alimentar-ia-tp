@@ -2,10 +2,12 @@
 
 ## CPFs Mock para Teste
 
-Use os seguintes CPFs para testar o histórico de menus:
+**✨ QUALQUER CPF funciona!** Para facilitar os testes, o mock está configurado para retornar 3 menus de exemplo para qualquer CPF que você digitar.
 
-### CPF: 123.456.789-00
-**3 menus cadastrados:**
+### Exemplos de Teste:
+
+#### Seu CPF ou qualquer CPF válido (11 dígitos)
+**Sempre retorna 3 menus:**
 
 1. **Menu Emagrecimento** (20/11/2025)
    - Peso atual: 85.5 kg → Peso alvo: 75.0 kg
@@ -39,8 +41,15 @@ Use os seguintes CPFs para testar o histórico de menus:
 
 ---
 
-### Outros CPFs
-Qualquer outro CPF retornará **0 menus** (tela vazia com mensagem)
+### CPFs com Dados Específicos (opcional)
+
+Se quiser testar com dados específicos, use:
+
+#### CPF: 123.456.789-00
+**3 menus personalizados**
+
+#### CPF: 987.654.321-00
+**2 menus personalizados**
 
 ---
 

@@ -14,8 +14,8 @@ export interface HistoricalPlan {
   created_at: string; // ISO format
   objective: 'emagrecimento' | 'ganho_de_peso' | 'manutencao';
   current_weight: number;
-  target_weight: number | null;
   total_calories: number;
+  age: number;
 }
 
 /**
@@ -26,6 +26,8 @@ export interface MenuHistoryApiResponse {
   patient_id: string;
   total_plans: number;
   plans: HistoricalPlan[];
+  execution_id?: string;
+  timestamp?: string;
 }
 
 /**
@@ -40,6 +42,8 @@ export interface MenuSummary {
   type: 'maintenance' | 'weight_loss' | 'muscle_gain';
   daily_energy_kcal: number;
   created_at: string;
+  current_weight: number;
+  age: number;
 }
 
 export interface MenuHistoryResponse {
@@ -64,30 +68,30 @@ const MOCK_API_RESPONSES: Record<string, MenuHistoryApiResponse> = {
     patient_id: '12345678900',
     total_plans: 3,
     plans: [
-      {
-        plan_id: '550e8400-e29b-41d4-a716-446655440001',
-        created_at: '2025-11-20T14:30:00.000000',
-        objective: 'emagrecimento',
-        current_weight: 85.5,
-        target_weight: 75.0,
-        total_calories: 1800.0
-      },
-      {
-        plan_id: '550e8400-e29b-41d4-a716-446655440002',
-        created_at: '2025-11-15T09:15:00.000000',
-        objective: 'manutencao',
-        current_weight: 78.0,
-        target_weight: 78.0,
-        total_calories: 2200.0
-      },
-      {
-        plan_id: '550e8400-e29b-41d4-a716-446655440003',
-        created_at: '2025-11-10T16:45:00.000000',
-        objective: 'ganho_de_peso',
-        current_weight: 72.0,
-        target_weight: 80.0,
-        total_calories: 2800.0
-      }
+          {
+            plan_id: '550e8400-e29b-41d4-a716-446655440001',
+            created_at: '2025-11-20T14:30:00.000000',
+            objective: 'emagrecimento',
+            current_weight: 85.5,
+            total_calories: 1800.0,
+            age: 35
+          },
+          {
+            plan_id: '550e8400-e29b-41d4-a716-446655440002',
+            created_at: '2025-11-15T09:15:00.000000',
+            objective: 'manutencao',
+            current_weight: 78.0,
+            total_calories: 2200.0,
+            age: 35
+          },
+          {
+            plan_id: '550e8400-e29b-41d4-a716-446655440003',
+            created_at: '2025-11-10T16:45:00.000000',
+            objective: 'ganho_de_peso',
+            current_weight: 72.0,
+            total_calories: 2800.0,
+            age: 34
+          }
     ]
   },
   '98765432100': {
@@ -95,22 +99,22 @@ const MOCK_API_RESPONSES: Record<string, MenuHistoryApiResponse> = {
     patient_id: '98765432100',
     total_plans: 2,
     plans: [
-      {
-        plan_id: '550e8400-e29b-41d4-a716-446655440004',
-        created_at: '2025-11-22T11:00:00.000000',
-        objective: 'ganho_de_peso',
-        current_weight: 65.0,
-        target_weight: 75.0,
-        total_calories: 3200.0
-      },
-      {
-        plan_id: '550e8400-e29b-41d4-a716-446655440005',
-        created_at: '2025-11-18T08:30:00.000000',
-        objective: 'emagrecimento',
-        current_weight: 90.0,
-        target_weight: 80.0,
-        total_calories: 1600.0
-      }
+          {
+            plan_id: '550e8400-e29b-41d4-a716-446655440004',
+            created_at: '2025-11-22T11:00:00.000000',
+            objective: 'ganho_de_peso',
+            current_weight: 65.0,
+            total_calories: 3200.0,
+            age: 28
+          },
+          {
+            plan_id: '550e8400-e29b-41d4-a716-446655440005',
+            created_at: '2025-11-18T08:30:00.000000',
+            objective: 'emagrecimento',
+            current_weight: 90.0,
+            total_calories: 1600.0,
+            age: 28
+          }
     ]
   }
 };
@@ -151,7 +155,9 @@ function convertPlanToSummary(plan: HistoricalPlan, patientId: string): MenuSumm
     date: formattedDate,
     type: objectiveInfo.type,
     daily_energy_kcal: plan.total_calories,
-    created_at: plan.created_at
+    created_at: plan.created_at,
+    current_weight: plan.current_weight,
+    age: plan.age
   };
 }
 
@@ -197,24 +203,24 @@ export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> 
             created_at: '2025-11-20T14:30:00.000000',
             objective: 'emagrecimento',
             current_weight: 85.5,
-            target_weight: 75.0,
-            total_calories: 1800.0
+            total_calories: 1800.0,
+            age: 35
           },
           {
             plan_id: `${cpf}-plan-002`,
             created_at: '2025-11-15T09:15:00.000000',
             objective: 'manutencao',
             current_weight: 78.0,
-            target_weight: 78.0,
-            total_calories: 2200.0
+            total_calories: 2200.0,
+            age: 35
           },
           {
             plan_id: `${cpf}-plan-003`,
             created_at: '2025-11-10T16:45:00.000000',
             objective: 'ganho_de_peso',
             current_weight: 72.0,
-            target_weight: 80.0,
-            total_calories: 2800.0
+            total_calories: 2800.0,
+            age: 34
           }
         ]
       };
