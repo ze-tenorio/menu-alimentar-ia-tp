@@ -4,9 +4,10 @@ import { ArrowLeft, Lightbulb } from 'lucide-react';
 interface MenuLoadingScreenProps {
   onComplete: () => void;
   onBack: () => void;
+  type?: 'creating' | 'loading-history';
 }
 
-const MenuLoadingScreen: React.FC<MenuLoadingScreenProps> = ({ onComplete, onBack }) => {
+const MenuLoadingScreen: React.FC<MenuLoadingScreenProps> = ({ onComplete, onBack, type = 'creating' }) => {
   const [progress, setProgress] = useState(0);
   const [currentTip, setCurrentTip] = useState(0);
 
@@ -53,10 +54,12 @@ const MenuLoadingScreen: React.FC<MenuLoadingScreenProps> = ({ onComplete, onBac
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
-        {/* Exercise Icon */}
+        {/* Icon */}
         <div className="mb-8">
           <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center">
-            <span className="text-4xl">🏋️‍♂️</span>
+            <span className="text-4xl">
+              {type === 'loading-history' ? '📋' : '🏋️‍♂️'}
+            </span>
           </div>
         </div>
 
@@ -75,9 +78,18 @@ const MenuLoadingScreen: React.FC<MenuLoadingScreenProps> = ({ onComplete, onBac
 
         {/* Loading Text */}
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Criando seu menu...</h2>
-          <p className="text-gray-600">Analisando suas respostas e personalizando seu plano alimentar</p>
-          <p className="text-gray-500 text-sm mt-2">Isso pode levar de 20 a 30 segundos...</p>
+          {type === 'loading-history' ? (
+            <>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Carregando seus menus...</h2>
+              <p className="text-gray-600">Buscando seu histórico de planos alimentares</p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Criando seu menu...</h2>
+              <p className="text-gray-600">Analisando suas respostas e personalizando seu plano alimentar</p>
+              <p className="text-gray-500 text-sm mt-2">Isso pode levar de 20 a 30 segundos...</p>
+            </>
+          )}
         </div>
 
         {/* Tips */}

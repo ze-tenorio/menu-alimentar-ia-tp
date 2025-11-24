@@ -149,7 +149,17 @@ const API_KEY = import.meta.env.VITE_API_KEY;
  */
 export async function generateMenu(payload: MenuApiPayload): Promise<MenuApiResponse> {
   console.log('Enviando requisição para API:', API_URL);
+  console.log('API Key está configurada:', !!API_KEY);
+  console.log('API Key (primeiros 10 chars):', API_KEY ? API_KEY.substring(0, 10) + '...' : 'UNDEFINED');
   console.log('Payload:', payload);
+
+  if (!API_KEY) {
+    console.error('⚠️ ATENÇÃO: API Key não está configurada! Verifique o arquivo .env.local');
+    return {
+      success: false,
+      error: 'API Key não configurada. Verifique o arquivo .env.local com VITE_API_KEY'
+    };
+  }
 
   try {
     const response = await fetch(API_URL, {

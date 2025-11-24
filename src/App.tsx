@@ -16,6 +16,7 @@ const App = () => {
   const [showCpfEntry, setShowCpfEntry] = useState(false);
   const [showMenuForm, setShowMenuForm] = useState(false);
   const [showMenuLoading, setShowMenuLoading] = useState(false);
+  const [loadingType, setLoadingType] = useState<'creating' | 'loading-history'>('creating');
   const [showGeneratedMenu, setShowGeneratedMenu] = useState(false);
   const [showMenusList, setShowMenusList] = useState(false);
   const [showShoppingList, setShowShoppingList] = useState(false);
@@ -62,14 +63,17 @@ const App = () => {
     console.log('CPF submetido:', cpf);
     setUserCpf(cpf);
     setShowCpfEntry(false);
+    setLoadingType('loading-history');
     setShowMenuLoading(true);
     
     try {
       // Buscar histórico de menus do usuário
       const result = await getMenuHistory(cpf);
       
+      console.log('Resultado da busca:', result);
+      
       if (result.success) {
-        console.log('Histórico carregado:', result.menus);
+        console.log('Histórico carregado com', result.menus.length, 'menus:', result.menus);
         setHistoricalMenus(result.menus);
         setShowMenuLoading(false);
         setShowMenusList(true);
@@ -96,6 +100,7 @@ const App = () => {
     console.log('Payload recebido no App:', payload);
     setFormData(payload);
     setShowMenuForm(false);
+    setLoadingType('creating');
     setShowMenuLoading(true);
     setApiError(null);
     
@@ -305,7 +310,7 @@ const App = () => {
   if (showMenuLoading) {
     // MenuLoadingScreen não chama onComplete automaticamente
     // Só avançamos quando a API retornar
-    return <MenuLoadingScreen onComplete={() => {}} onBack={handleMenuLoadingBack} />;
+    return <MenuLoadingScreen onComplete={() => {}} onBack={handleMenuLoadingBack} type={loadingType} />;
   }
 
   if (showGeneratedMenu) {

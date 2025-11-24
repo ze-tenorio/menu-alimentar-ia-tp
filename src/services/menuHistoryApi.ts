@@ -6,6 +6,31 @@
 
 import { MenuPlan } from './menuApi';
 
+/**
+ * Formato do plano retornado pela API de histórico
+ */
+export interface HistoricalPlan {
+  plan_id: string;
+  created_at: string; // ISO format
+  objective: 'emagrecimento' | 'ganho_de_peso' | 'manutencao';
+  current_weight: number;
+  target_weight: number | null;
+  total_calories: number;
+}
+
+/**
+ * Resposta da API de histórico
+ */
+export interface MenuHistoryApiResponse {
+  success: boolean;
+  patient_id: string;
+  total_plans: number;
+  plans: HistoricalPlan[];
+}
+
+/**
+ * Formato usado internamente para exibir na lista
+ */
 export interface MenuSummary {
   id: string;
   patient_id: string;
@@ -31,44 +56,104 @@ export interface MenuDetailResponse {
 }
 
 /**
- * Dados mock para testes
+ * Dados mock para testes - formato da API real
  */
-const MOCK_MENUS: Record<string, MenuSummary[]> = {
-  '12345678900': [
-    {
-      id: 'plan-001',
-      patient_id: '12345678900',
-      title: 'Menu Emagrecimento',
-      objective: 'Perda de Peso e Definição',
-      date: '10/11/2024',
-      type: 'weight_loss',
-      daily_energy_kcal: 2000,
-      created_at: '2024-11-10T10:30:00Z'
-    },
-    {
-      id: 'plan-002',
-      patient_id: '12345678900',
-      title: 'Menu Manutenção',
-      objective: 'Manutenção de Peso e Saúde Geral',
-      date: '05/11/2024',
-      type: 'maintenance',
-      daily_energy_kcal: 2500,
-      created_at: '2024-11-05T14:20:00Z'
-    }
-  ],
-  '98765432100': [
-    {
-      id: 'plan-003',
-      patient_id: '98765432100',
-      title: 'Menu Ganho de Massa',
-      objective: 'Ganho de Peso e Massa Muscular',
-      date: '12/11/2024',
-      type: 'muscle_gain',
-      daily_energy_kcal: 3500,
-      created_at: '2024-11-12T09:15:00Z'
-    }
-  ]
+const MOCK_API_RESPONSES: Record<string, MenuHistoryApiResponse> = {
+  '12345678900': {
+    success: true,
+    patient_id: '12345678900',
+    total_plans: 3,
+    plans: [
+      {
+        plan_id: '550e8400-e29b-41d4-a716-446655440001',
+        created_at: '2025-11-20T14:30:00.000000',
+        objective: 'emagrecimento',
+        current_weight: 85.5,
+        target_weight: 75.0,
+        total_calories: 1800.0
+      },
+      {
+        plan_id: '550e8400-e29b-41d4-a716-446655440002',
+        created_at: '2025-11-15T09:15:00.000000',
+        objective: 'manutencao',
+        current_weight: 78.0,
+        target_weight: 78.0,
+        total_calories: 2200.0
+      },
+      {
+        plan_id: '550e8400-e29b-41d4-a716-446655440003',
+        created_at: '2025-11-10T16:45:00.000000',
+        objective: 'ganho_de_peso',
+        current_weight: 72.0,
+        target_weight: 80.0,
+        total_calories: 2800.0
+      }
+    ]
+  },
+  '98765432100': {
+    success: true,
+    patient_id: '98765432100',
+    total_plans: 2,
+    plans: [
+      {
+        plan_id: '550e8400-e29b-41d4-a716-446655440004',
+        created_at: '2025-11-22T11:00:00.000000',
+        objective: 'ganho_de_peso',
+        current_weight: 65.0,
+        target_weight: 75.0,
+        total_calories: 3200.0
+      },
+      {
+        plan_id: '550e8400-e29b-41d4-a716-446655440005',
+        created_at: '2025-11-18T08:30:00.000000',
+        objective: 'emagrecimento',
+        current_weight: 90.0,
+        target_weight: 80.0,
+        total_calories: 1600.0
+      }
+    ]
+  }
 };
+
+/**
+ * Converte um plano da API para o formato de exibição
+ */
+function convertPlanToSummary(plan: HistoricalPlan, patientId: string): MenuSummary {
+  const objectiveMap = {
+    'emagrecimento': {
+      title: 'Menu Emagrecimento',
+      text: 'Perda de Peso e Definição',
+      type: 'weight_loss' as const
+    },
+    'ganho_de_peso': {
+      title: 'Menu Ganho de Massa',
+      text: 'Ganho de Peso e Massa Muscular',
+      type: 'muscle_gain' as const
+    },
+    'manutencao': {
+      title: 'Menu Manutenção',
+      text: 'Manutenção de Peso e Saúde Geral',
+      type: 'maintenance' as const
+    }
+  };
+
+  const objectiveInfo = objectiveMap[plan.objective];
+  
+  // Formata a data para exibição
+  const date = new Date(plan.created_at);
+  const formattedDate = date.toLocaleDateString('pt-BR');
+
+  return {
+    id: plan.plan_id,
+    patient_id: patientId,
+    title: objectiveInfo.title,
+    objective: objectiveInfo.text,
+    date: formattedDate,
+    type: objectiveInfo.type,
+    daily_energy_kcal: plan.total_calories,
+    created_at: plan.created_at
+  };
+}
 
 /**
  * Busca o histórico de menus de um paciente pelo CPF
@@ -86,7 +171,7 @@ export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> 
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   try {
-    // TODO: Substituir por chamada real
+    // TODO: Substituir por chamada real quando a API estiver pronta
     // const response = await fetch(`${API_URL}/menus/history?patient_id=${cpf}`, {
     //   method: 'GET',
     //   headers: {
@@ -94,16 +179,58 @@ export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> 
     //     'x-api-key': API_KEY,
     //   },
     // });
+    // const apiResponse: MenuHistoryApiResponse = await response.json();
     
-    // Mock: buscar menus do CPF
-    const menus = MOCK_MENUS[cpf] || [];
+    // Mock: buscar menus do CPF usando o formato da API real
+    let apiResponse = MOCK_API_RESPONSES[cpf];
     
-    console.log(`Encontrados ${menus.length} menus para o CPF ${cpf}`);
+    // Para testes: se não encontrar o CPF específico, retorna menus de exemplo
+    if (!apiResponse) {
+      console.log(`CPF ${cpf} não encontrado no mock, retornando menus de exemplo`);
+      apiResponse = {
+        success: true,
+        patient_id: cpf,
+        total_plans: 3,
+        plans: [
+          {
+            plan_id: `${cpf}-plan-001`,
+            created_at: '2025-11-20T14:30:00.000000',
+            objective: 'emagrecimento',
+            current_weight: 85.5,
+            target_weight: 75.0,
+            total_calories: 1800.0
+          },
+          {
+            plan_id: `${cpf}-plan-002`,
+            created_at: '2025-11-15T09:15:00.000000',
+            objective: 'manutencao',
+            current_weight: 78.0,
+            target_weight: 78.0,
+            total_calories: 2200.0
+          },
+          {
+            plan_id: `${cpf}-plan-003`,
+            created_at: '2025-11-10T16:45:00.000000',
+            objective: 'ganho_de_peso',
+            current_weight: 72.0,
+            target_weight: 80.0,
+            total_calories: 2800.0
+          }
+        ]
+      };
+    }
+    
+    // Converte os planos da API para o formato de exibição
+    const menus = apiResponse.plans.map(plan => 
+      convertPlanToSummary(plan, cpf)
+    );
+    
+    console.log(`Encontrados ${menus.length} menus para o CPF ${cpf}:`, menus);
     
     return {
       success: true,
       menus: menus,
-      total: menus.length
+      total: apiResponse.total_plans
     };
   } catch (error) {
     console.error('Erro ao buscar histórico:', error);
