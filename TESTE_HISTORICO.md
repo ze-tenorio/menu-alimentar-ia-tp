@@ -10,19 +10,22 @@
 **Sempre retorna 3 menus:**
 
 1. **Menu Emagrecimento** (20/11/2025)
-   - Peso atual: 85.5 kg → Peso alvo: 75.0 kg
-   - Total de calorias: 1,800 kcal/dia
-   - Objetivo: Perda de Peso e Definição
+   - 📊 Idade: 35 anos
+   - ⚖️ Peso atual: 85.5 kg
+   - 🔥 Calorias: 1,800 kcal/dia
+   - 🎯 Objetivo: Perda de Peso e Definição
 
 2. **Menu Manutenção** (15/11/2025)
-   - Peso atual: 78.0 kg → Peso alvo: 78.0 kg
-   - Total de calorias: 2,200 kcal/dia
-   - Objetivo: Manutenção de Peso e Saúde Geral
+   - 📊 Idade: 35 anos
+   - ⚖️ Peso atual: 78.0 kg
+   - 🔥 Calorias: 2,200 kcal/dia
+   - 🎯 Objetivo: Manutenção de Peso e Saúde Geral
 
 3. **Menu Ganho de Massa** (10/11/2025)
-   - Peso atual: 72.0 kg → Peso alvo: 80.0 kg
-   - Total de calorias: 2,800 kcal/dia
-   - Objetivo: Ganho de Peso e Massa Muscular
+   - 📊 Idade: 34 anos
+   - ⚖️ Peso atual: 72.0 kg
+   - 🔥 Calorias: 2,800 kcal/dia
+   - 🎯 Objetivo: Ganho de Peso e Massa Muscular
 
 ---
 
@@ -91,31 +94,47 @@ Se quiser testar com dados específicos, use:
 {
   "success": true,
   "patient_id": "12345678900",
-  "total_plans": 3,
+  "total_plans": 2,
   "plans": [
     {
-      "plan_id": "550e8400-e29b-41d4-a716-446655440001",
-      "created_at": "2025-11-20T14:30:00.000000",
+      "plan_id": "550e8400-e29b-41d4-a716-446655440000",
+      "created_at": "2025-11-24T10:30:00.000000",
       "objective": "emagrecimento",
       "current_weight": 85.5,
-      "target_weight": 75.0,
-      "total_calories": 1800.0
+      "total_calories": 1800.0,
+      "age": 35
+    },
+    {
+      "plan_id": "650e8400-e29b-41d4-a716-446655440001",
+      "created_at": "2025-11-20T14:20:00.000000",
+      "objective": "manutencao",
+      "current_weight": 85.5,
+      "total_calories": 2200.0,
+      "age": 35
     }
-  ]
+  ],
+  "execution_id": "abc123-def456",
+  "timestamp": "2025-11-24T15:45:30.123456"
 }
 ```
 
-### Campos:
+### Campos da Resposta:
 - `success`: indica se a requisição foi bem-sucedida
 - `patient_id`: CPF do paciente (sem formatação)
 - `total_plans`: número total de planos
-- `plans`: array de planos com:
-  - `plan_id`: UUID do plano
-  - `created_at`: data/hora de criação (ISO 8601)
-  - `objective`: `emagrecimento`, `ganho_de_peso` ou `manutencao`
-  - `current_weight`: peso atual do paciente
-  - `target_weight`: peso alvo (pode ser igual ao atual para manutenção)
-  - `total_calories`: total de calorias diárias do plano
+- `plans`: array de planos
+- `execution_id`: ID da execução (opcional)
+- `timestamp`: timestamp da resposta (opcional)
+
+### Campos de Cada Plano:
+- `plan_id`: UUID do plano (guardado para buscar detalhes)
+- `created_at`: data/hora de criação (ISO 8601)
+- `objective`: `emagrecimento`, `ganho_de_peso` ou `manutencao`
+- `current_weight`: peso atual do paciente em kg
+- `total_calories`: total de calorias diárias do plano
+- `age`: idade do paciente em anos
+
+**Nota:** O `plan_id` NÃO é exibido no card, mas é guardado para fazer a requisição de detalhes quando o usuário clicar no menu.
 
 ---
 
@@ -127,10 +146,14 @@ Se quiser testar com dados específicos, use:
 - ✅ Exibição de lista de menus com:
   - Título baseado no objetivo
   - Data formatada (DD/MM/AAAA)
-  - Ícone e cor por tipo de objetivo
+  - Ícone grande por tipo de objetivo (📉 💪 ⚖️)
+  - **Idade** (anos) com ícone 👤
+  - **Peso atual** (kg) com ícone ⚖️
+  - **Calorias diárias** formatadas com ícone 🔥
 - ✅ Estado vazio quando não há menus
 - ✅ Botão "Criar Novo Menu" que reaproveita o CPF
-- ✅ Loading screen durante busca
+- ✅ Loading screen personalizada ("Carregando seus menus..." com ícone 📋)
+- ✅ Layout melhorado com grid de 3 colunas para as informações
 
 ---
 
