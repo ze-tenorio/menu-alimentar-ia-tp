@@ -6,17 +6,22 @@ import MenuLoadingScreen from "./components/MenuLoadingScreen";
 import GeneratedMenuScreen from "./components/GeneratedMenuScreen";
 import MenusListScreen from "./components/MenusListScreen";
 import ShoppingListScreen from "./components/ShoppingListScreen";
+import CpfEntryScreen from "./components/CpfEntryScreen";
 import { generateMenu, MenuPlan } from "./services/menuApi";
+import { getMenuHistory, MenuSummary } from "./services/menuHistoryApi";
 
 const App = () => {
   const [showTransition, setShowTransition] = useState(true);
   const [showMenuAlimentar, setShowMenuAlimentar] = useState(false);
+  const [showCpfEntry, setShowCpfEntry] = useState(false);
   const [showMenuForm, setShowMenuForm] = useState(false);
   const [showMenuLoading, setShowMenuLoading] = useState(false);
   const [showGeneratedMenu, setShowGeneratedMenu] = useState(false);
   const [showMenusList, setShowMenusList] = useState(false);
   const [showShoppingList, setShowShoppingList] = useState(false);
   const [hasCreatedMenu, setHasCreatedMenu] = useState(false);
+  const [userCpf, setUserCpf] = useState<string>('');
+  const [historicalMenus, setHistoricalMenus] = useState<MenuSummary[]>([]);
   const [createdMenus, setCreatedMenus] = useState<Array<{
     id: string;
     title: string;
@@ -41,6 +46,45 @@ const App = () => {
   const handleMenuFormOpen = () => {
     setShowMenuAlimentar(false);
     setShowMenuForm(true);
+  };
+
+  const handleViewMyMenus = () => {
+    setShowMenuAlimentar(false);
+    setShowCpfEntry(true);
+  };
+
+  const handleCpfEntryClose = () => {
+    setShowCpfEntry(false);
+    setShowMenuAlimentar(true);
+  };
+
+  const handleCpfSubmit = async (cpf: string) => {
+    console.log('CPF submetido:', cpf);
+    setUserCpf(cpf);
+    setShowCpfEntry(false);
+    setShowMenuLoading(true);
+    
+    try {
+      // Buscar histórico de menus do usuário
+      const result = await getMenuHistory(cpf);
+      
+      if (result.success) {
+        console.log('Histórico carregado:', result.menus);
+        setHistoricalMenus(result.menus);
+        setShowMenuLoading(false);
+        setShowMenusList(true);
+      } else {
+        console.error('Erro ao buscar histórico:', result.error);
+        alert('Erro ao buscar menus: ' + (result.error || 'Erro desconhecido'));
+        setShowMenuLoading(false);
+        setShowCpfEntry(true);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar histórico:', error);
+      alert('Erro ao buscar menus. Por favor, tente novamente.');
+      setShowMenuLoading(false);
+      setShowCpfEntry(true);
+    }
   };
 
   const handleMenuFormClose = () => {
@@ -115,16 +159,20 @@ const App = () => {
 
   const handleViewMenus = () => {
     setShowMenuAlimentar(false);
-    setShowMenusList(true);
+    setShowCpfEntry(true);
   };
 
   const handleMenusListClose = () => {
     setShowMenusList(false);
+    setUserCpf('');
+    setHistoricalMenus([]);
   };
 
   const handleMenusListBack = () => {
     setShowMenusList(false);
     setShowMenuAlimentar(true);
+    setUserCpf('');
+    setHistoricalMenus([]);
   };
 
   const handleCreateNewMenu = () => {
@@ -132,18 +180,32 @@ const App = () => {
     setShowMenuForm(true);
   };
 
-  const handleViewMenu = (menuId: string) => {
-    const menu = createdMenus.find(m => m.id === menuId);
-    if (menu) {
+  const handleViewMenu = async (menuId: string) => {
+    // Primeiro tenta encontrar nos menus criados nesta sessão
+    const localMenu = createdMenus.find(m => m.id === menuId);
+    if (localMenu) {
       setFormData({ 
         nutritional_plan_goals: { 
-          primary_objective: getObjectiveId(menu.type) 
+          primary_objective: getObjectiveId(localMenu.type) 
         } 
       });
-      setCurrentMenu(menu.menuData || null);
+      setCurrentMenu(localMenu.menuData || null);
+      setShowMenusList(false);
+      setShowGeneratedMenu(true);
+      return;
     }
-    setShowMenusList(false);
-    setShowGeneratedMenu(true);
+    
+    // Se não encontrou localmente, é um menu histórico
+    // TODO: Quando a API estiver pronta, buscar detalhes do menu
+    console.log('Buscar detalhes do menu histórico:', menuId);
+    alert('Visualização de menus históricos será implementada quando a API estiver pronta.');
+    
+    // const result = await getMenuDetail(menuId);
+    // if (result.success && result.plan) {
+    //   setCurrentMenu(result.plan);
+    //   setShowMenusList(false);
+    //   setShowGeneratedMenu(true);
+    // }
   };
 
   const handleShowShoppingList = () => {
@@ -232,8 +294,12 @@ const App = () => {
     );
   }
 
+  if (showCpfEntry) {
+    return <CpfEntryScreen onClose={handleCpfEntryClose} onSubmit={handleCpfSubmit} />;
+  }
+
   if (showMenuForm) {
-    return <MenuAlimentarForm onClose={handleMenuFormClose} onComplete={handleMenuFormComplete} />;
+    return <MenuAlimentarForm onClose={handleMenuFormClose} onComplete={handleMenuFormComplete} initialCpf={userCpf} />;
   }
 
   if (showMenuLoading) {
@@ -259,13 +325,24 @@ const App = () => {
   }
 
   if (showMenusList) {
+    // Se tiver menus históricos, usar eles; senão, usar menus criados nesta sessão
+    const menusToShow = historicalMenus.length > 0 
+      ? historicalMenus.map(menu => ({
+          id: menu.id,
+          title: menu.title,
+          objective: menu.objective,
+          date: menu.date,
+          type: menu.type
+        }))
+      : createdMenus;
+      
     return (
       <MenusListScreen 
         onClose={handleMenusListClose} 
         onBack={handleMenusListBack} 
         onCreateNew={handleCreateNewMenu} 
         onViewMenu={handleViewMenu} 
-        menus={createdMenus} 
+        menus={menusToShow} 
       />
     );
   }

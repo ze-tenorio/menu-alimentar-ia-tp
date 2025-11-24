@@ -97,24 +97,22 @@ const MenuAlimentarScreen: React.FC<MenuAlimentarScreenProps> = ({
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            {hasCreatedMenu && (
-              <button 
-                onClick={onViewMenus}
-                className="w-full bg-white border-2 border-primary text-primary py-4 px-6 rounded-lg font-semibold text-base flex items-center justify-center hover:bg-primary/5 transition-colors"
-              >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                Meus Menus ({menuCount})
-              </button>
-            )}
+            <button 
+              onClick={onViewMenus}
+              className="w-full bg-white border-2 border-primary text-primary py-4 px-6 rounded-lg font-semibold text-base flex items-center justify-center hover:bg-primary/5 transition-colors"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              Ver Meus Menus
+            </button>
             
             <button 
               onClick={onStartForm}
               className="w-full bg-primary text-primary-foreground py-4 px-6 rounded-lg font-semibold text-base flex items-center justify-center hover:bg-primary/90 transition-colors"
             >
               <Plus size={20} className="mr-2" />
-              Criar Menu Alimentar
+              Criar Novo Menu
             </button>
           </div>
         </div>

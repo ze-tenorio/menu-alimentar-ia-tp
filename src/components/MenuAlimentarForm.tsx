@@ -4,13 +4,15 @@ import { ArrowLeft, Plus, Minus, Target, Heart, Activity, Zap, Utensils, FileTex
 interface MenuAlimentarFormProps {
   onClose: () => void;
   onComplete: (formData: any) => void;
+  initialCpf?: string; // CPF já coletado anteriormente
 }
 
-const MenuAlimentarForm: React.FC<MenuAlimentarFormProps> = ({ onClose, onComplete }) => {
-  const [currentStep, setCurrentStep] = useState(1);
+const MenuAlimentarForm: React.FC<MenuAlimentarFormProps> = ({ onClose, onComplete, initialCpf }) => {
+  // Se já tem CPF, começa no step 2; senão, começa no step 1
+  const [currentStep, setCurrentStep] = useState(initialCpf ? 2 : 1);
   const [formData, setFormData] = useState({
-    // Step 1: CPF (patient_id)
-    cpf: '',
+    // Step 1: CPF (patient_id) - pode vir preenchido
+    cpf: initialCpf || '',
     
     // Step 2: Nome e Sexo Biológico
     fullName: '',
@@ -131,7 +133,10 @@ const MenuAlimentarForm: React.FC<MenuAlimentarFormProps> = ({ onClose, onComple
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
+    // Se tem CPF inicial e está no step 2, volta para a tela anterior (não step 1)
+    if (initialCpf && currentStep === 2) {
+      onClose();
+    } else if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     } else {
       onClose();
