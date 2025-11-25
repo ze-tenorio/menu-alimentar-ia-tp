@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, X, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, ShoppingCart } from 'lucide-react';
 import { MenuPlan } from '../services/menuApi';
 
 interface GeneratedMenuScreenProps {
@@ -30,10 +30,6 @@ const GeneratedMenuScreen: React.FC<GeneratedMenuScreenProps> = ({
   
   // Verificar se temos dados reais da API
   const hasApiData = apiMenuData && mealsArray.length > 0;
-  
-  console.log('GeneratedMenuScreen - hasApiData:', hasApiData);
-  console.log('GeneratedMenuScreen - mealsArray:', mealsArray);
-  console.log('GeneratedMenuScreen - apiMenuData:', apiMenuData);
   
   const defaultMenuData = {
     objective: objective || "Manutenção de Peso e Saúde Geral",
@@ -260,9 +256,7 @@ const GeneratedMenuScreen: React.FC<GeneratedMenuScreenProps> = ({
           <ArrowLeft size={24} />
         </button>
         <h1 className="text-lg font-semibold text-gray-800">Meus Menus</h1>
-        <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
-          <X size={24} />
-        </button>
+        <div className="w-6"></div> {/* Spacer para manter centralização */}
       </div>
 
       {/* Fixed Header */}

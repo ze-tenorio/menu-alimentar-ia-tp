@@ -148,13 +148,7 @@ const API_KEY = import.meta.env.VITE_API_KEY;
  * ```
  */
 export async function generateMenu(payload: MenuApiPayload): Promise<MenuApiResponse> {
-  console.log('Enviando requisição para API:', API_URL);
-  console.log('API Key está configurada:', !!API_KEY);
-  console.log('API Key (primeiros 10 chars):', API_KEY ? API_KEY.substring(0, 10) + '...' : 'UNDEFINED');
-  console.log('Payload:', payload);
-
   if (!API_KEY) {
-    console.error('⚠️ ATENÇÃO: API Key não está configurada! Verifique o arquivo .env.local');
     return {
       success: false,
       error: 'API Key não configurada. Verifique o arquivo .env.local com VITE_API_KEY'
@@ -171,16 +165,12 @@ export async function generateMenu(payload: MenuApiPayload): Promise<MenuApiResp
       body: JSON.stringify(payload),
     });
 
-    console.log('Status da resposta:', response.status);
-
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Erro na resposta:', errorText);
-      throw new Error(`Erro HTTP: ${response.status} - ${errorText}`);
+      throw new Error(`Erro HTTP: ${response.status}`);
     }
 
     const data: MenuApiResponse = await response.json();
-    console.log('Resposta da API:', data);
 
     if (!data.success) {
       return {
@@ -191,10 +181,9 @@ export async function generateMenu(payload: MenuApiPayload): Promise<MenuApiResp
 
     return data;
   } catch (error) {
-    console.error('Erro ao chamar API de menu:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erro desconhecido ao conectar com o servidor',
+      error: 'Erro ao gerar menu. Por favor, tente novamente.',
     };
   }
 }

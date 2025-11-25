@@ -174,7 +174,6 @@ function convertPlanToSummary(plan: HistoricalPlan, patientId: string): MenuSumm
   
   // Se não encontrou no mapa, usar padrão
   if (!objectiveInfo) {
-    console.warn(`Objetivo desconhecido: ${plan.objective}, usando padrão 'maintenance'`);
     return {
       id: plan.plan_id,
       patient_id: patientId,
@@ -214,11 +213,7 @@ function convertPlanToSummary(plan: HistoricalPlan, patientId: string): MenuSumm
  * @returns Promise com lista de menus do paciente
  */
 export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> {
-  console.log('Buscando histórico de menus para CPF:', cpf);
-  console.log('API Key configurada:', !!API_KEY);
-  
   if (!API_KEY) {
-    console.error('⚠️ ATENÇÃO: API Key não está configurada!');
     return {
       success: false,
       menus: [],
@@ -228,10 +223,6 @@ export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> 
   }
   
   try {
-    // Chamada real para a API
-    console.log('Chamando API:', API_LIST_PLANS);
-    console.log('Body:', { patient_id: cpf });
-    
     const response = await fetch(API_LIST_PLANS, {
       method: 'POST',
       headers: {
@@ -243,23 +234,17 @@ export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> 
       })
     });
 
-    console.log('Status da resposta:', response.status);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Erro na resposta da API:', errorText);
-      throw new Error(`Erro HTTP: ${response.status} - ${errorText}`);
+      throw new Error(`Erro HTTP: ${response.status}`);
     }
 
     let data = await response.json();
-    console.log('Resposta da API (raw):', data);
     
     // A API retorna o JSON dentro de um campo "body" como string
     // Precisamos parsear novamente
     let apiResponse: MenuHistoryApiResponse;
     
     if (data.body && typeof data.body === 'string') {
-      console.log('Parseando body string...');
       apiResponse = JSON.parse(data.body);
     } else if (data.success !== undefined) {
       // Se já veio parseado corretamente
@@ -267,8 +252,6 @@ export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> 
     } else {
       throw new Error('Formato de resposta inesperado');
     }
-    
-    console.log('Resposta da API (parseada):', apiResponse);
     
     if (!apiResponse.success) {
       return {
@@ -284,20 +267,17 @@ export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> 
       convertPlanToSummary(plan, cpf)
     );
     
-    console.log(`✅ Encontrados ${menus.length} menus para o CPF ${cpf}`);
-    
     return {
       success: true,
       menus: menus,
       total: apiResponse.total_plans
     };
   } catch (error) {
-    console.error('❌ Erro ao buscar histórico:', error);
     return {
       success: false,
       menus: [],
       total: 0,
-      error: error instanceof Error ? error.message : 'Erro desconhecido'
+      error: 'Erro ao buscar histórico'
     };
   }
 }
@@ -310,11 +290,7 @@ export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> 
  * @returns Promise com os detalhes completos do menu
  */
 export async function getMenuDetail(patientId: string, planId: string): Promise<MenuDetailResponse> {
-  console.log('Buscando detalhes do menu:', { patientId, planId });
-  console.log('API Key configurada:', !!API_KEY);
-  
   if (!API_KEY) {
-    console.error('⚠️ ATENÇÃO: API Key não está configurada!');
     return {
       success: false,
       error: 'API Key não configurada'
@@ -322,10 +298,6 @@ export async function getMenuDetail(patientId: string, planId: string): Promise<
   }
   
   try {
-    // Chamada real para a API
-    console.log('Chamando API:', API_GET_PLAN);
-    console.log('Body:', { patient_id: patientId, plan_id: planId });
-    
     const response = await fetch(API_GET_PLAN, {
       method: 'POST',
       headers: {
@@ -338,28 +310,20 @@ export async function getMenuDetail(patientId: string, planId: string): Promise<
       })
     });
 
-    console.log('Status da resposta:', response.status);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Erro na resposta da API:', errorText);
-      throw new Error(`Erro HTTP: ${response.status} - ${errorText}`);
+      throw new Error(`Erro HTTP: ${response.status}`);
     }
 
     let data = await response.json();
-    console.log('Resposta da API (raw):', data);
     
     // A API pode retornar o JSON dentro de um campo "body" como string
     let parsedData: any;
     
     if (data.body && typeof data.body === 'string') {
-      console.log('Parseando body string...');
       parsedData = JSON.parse(data.body);
     } else {
       parsedData = data;
     }
-    
-    console.log('Resposta da API (parseada):', parsedData);
     
     // Verifica se houve erro
     if (parsedData.success === false) {
@@ -373,32 +337,23 @@ export async function getMenuDetail(patientId: string, planId: string): Promise<
     let plan: MenuPlan;
     
     if (parsedData.data && parsedData.data.meal_plan) {
-      console.log('Extraindo meal_plan de data.meal_plan');
       plan = parsedData.data.meal_plan;
     } else if (parsedData.plan) {
-      console.log('Usando parsedData.plan');
       plan = parsedData.plan;
     } else if (parsedData.meal_plan) {
-      console.log('Usando parsedData.meal_plan');
       plan = parsedData.meal_plan;
     } else {
-      // Assume que parsedData já é o plano
-      console.log('Usando parsedData como plano direto');
       plan = parsedData;
     }
-    
-    console.log('✅ Detalhes do menu carregados com sucesso');
-    console.log('Plan final:', plan);
     
     return {
       success: true,
       plan: plan
     };
   } catch (error) {
-    console.error('❌ Erro ao buscar detalhes do menu:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erro desconhecido'
+      error: 'Erro ao buscar detalhes do menu'
     };
   }
 }

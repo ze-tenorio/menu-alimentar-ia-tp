@@ -60,7 +60,6 @@ const App = () => {
   };
 
   const handleCpfSubmit = async (cpf: string) => {
-    console.log('CPF submetido:', cpf);
     setUserCpf(cpf);
     setShowCpfEntry(false);
     setLoadingType('loading-history');
@@ -70,21 +69,16 @@ const App = () => {
       // Buscar histórico de menus do usuário
       const result = await getMenuHistory(cpf);
       
-      console.log('Resultado da busca:', result);
-      
       if (result.success) {
-        console.log('Histórico carregado com', result.menus.length, 'menus:', result.menus);
         setHistoricalMenus(result.menus);
         setShowMenuLoading(false);
         setShowMenusList(true);
       } else {
-        console.error('Erro ao buscar histórico:', result.error);
         alert('Erro ao buscar menus: ' + (result.error || 'Erro desconhecido'));
         setShowMenuLoading(false);
         setShowCpfEntry(true);
       }
     } catch (error) {
-      console.error('Erro ao buscar histórico:', error);
       alert('Erro ao buscar menus. Por favor, tente novamente.');
       setShowMenuLoading(false);
       setShowCpfEntry(true);
@@ -97,7 +91,6 @@ const App = () => {
   };
 
   const handleMenuFormComplete = async (payload: any) => {
-    console.log('Payload recebido no App:', payload);
     setFormData(payload);
     setShowMenuForm(false);
     setLoadingType('creating');
@@ -109,12 +102,10 @@ const App = () => {
       const result = await generateMenu(payload);
       
       if (result.success && result.plan) {
-        console.log('Menu gerado com sucesso:', result.plan);
         setCurrentMenu(result.plan);
         // Avançar para a tela de menu gerado
         handleMenuLoadingComplete();
       } else {
-        console.error('Erro ao gerar menu:', result.error);
         setApiError(result.error || 'Erro desconhecido ao gerar menu');
         // Voltar para o formulário em caso de erro
         alert('Erro ao gerar menu: ' + (result.error || 'Erro desconhecido'));
@@ -122,7 +113,6 @@ const App = () => {
         setShowMenuForm(true);
       }
     } catch (error) {
-      console.error('Erro ao gerar menu:', error);
       setApiError(error instanceof Error ? error.message : 'Erro desconhecido');
       alert('Erro ao gerar menu. Por favor, tente novamente.');
       setShowMenuLoading(false);
@@ -157,9 +147,32 @@ const App = () => {
     setShowGeneratedMenu(false);
   };
 
-  const handleGeneratedMenuBack = () => {
+  const handleGeneratedMenuBack = async () => {
     setShowGeneratedMenu(false);
-    setShowMenusList(true);
+    
+    // Se tem CPF, recarregar histórico para mostrar o novo menu
+    if (userCpf) {
+      setLoadingType('loading-history');
+      setShowMenuLoading(true);
+      
+      try {
+        const result = await getMenuHistory(userCpf);
+        
+        if (result.success) {
+          setHistoricalMenus(result.menus);
+          setShowMenuLoading(false);
+          setShowMenusList(true);
+        } else {
+          setShowMenuLoading(false);
+          setShowMenusList(true);
+        }
+      } catch (error) {
+        setShowMenuLoading(false);
+        setShowMenusList(true);
+      }
+    } else {
+      setShowMenusList(true);
+    }
   };
 
   const handleViewMenus = () => {
@@ -186,12 +199,9 @@ const App = () => {
   };
 
   const handleViewMenu = async (menuId: string) => {
-    console.log('handleViewMenu chamado com menuId:', menuId);
-    
     // Primeiro tenta encontrar nos menus criados nesta sessão
     const localMenu = createdMenus.find(m => m.id === menuId);
     if (localMenu) {
-      console.log('Menu encontrado localmente:', localMenu);
       setFormData({ 
         nutritional_plan_goals: { 
           primary_objective: getObjectiveId(localMenu.type) 
@@ -204,12 +214,7 @@ const App = () => {
     }
     
     // Se não encontrou localmente, é um menu histórico - buscar da API
-    console.log('Menu histórico, buscando detalhes da API...');
-    console.log('Patient ID (CPF):', userCpf);
-    console.log('Plan ID:', menuId);
-    
     if (!userCpf) {
-      console.error('CPF não encontrado!');
       alert('Erro: CPF não encontrado. Por favor, tente novamente.');
       return;
     }
@@ -222,18 +227,15 @@ const App = () => {
       const result = await getMenuDetail(userCpf, menuId);
       
       if (result.success && result.plan) {
-        console.log('✅ Detalhes do menu carregados:', result.plan);
         setCurrentMenu(result.plan);
         setShowMenuLoading(false);
         setShowGeneratedMenu(true);
       } else {
-        console.error('❌ Erro ao buscar detalhes:', result.error);
         alert('Erro ao carregar menu: ' + (result.error || 'Erro desconhecido'));
         setShowMenuLoading(false);
         setShowMenusList(true);
       }
     } catch (error) {
-      console.error('❌ Erro ao buscar detalhes do menu:', error);
       alert('Erro ao carregar menu. Por favor, tente novamente.');
       setShowMenuLoading(false);
       setShowMenusList(true);

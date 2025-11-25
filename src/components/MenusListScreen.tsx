@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, X, Plus, Calendar, Target, Scale, Flame, User } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, Target, Scale, Flame, User } from 'lucide-react';
 
 interface Menu {
   id: string;
@@ -58,9 +58,7 @@ const MenusListScreen: React.FC<MenusListScreenProps> = ({
           <ArrowLeft size={24} />
         </button>
         <h1 className="text-primary-foreground text-lg font-semibold">Meus Menus</h1>
-        <button onClick={onClose} className="text-primary-foreground hover:text-primary-foreground/80">
-          <X size={24} />
-        </button>
+        <div className="w-6"></div> {/* Spacer para manter centralização */}
       </div>
 
       {/* Content */}
