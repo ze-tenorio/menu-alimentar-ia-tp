@@ -195,15 +195,18 @@ export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> 
   
   try {
     // Chamada real para a API
-    const url = `${API_LIST_PLANS}?patient_id=${cpf}`;
-    console.log('Chamando API:', url);
+    console.log('Chamando API:', API_LIST_PLANS);
+    console.log('Body:', { patient_id: cpf });
     
-    const response = await fetch(url, {
-      method: 'GET',
+    const response = await fetch(API_LIST_PLANS, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY,
       },
+      body: JSON.stringify({
+        patient_id: cpf
+      })
     });
 
     console.log('Status da resposta:', response.status);
@@ -214,8 +217,24 @@ export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> 
       throw new Error(`Erro HTTP: ${response.status} - ${errorText}`);
     }
 
-    const apiResponse: MenuHistoryApiResponse = await response.json();
-    console.log('Resposta da API:', apiResponse);
+    let data = await response.json();
+    console.log('Resposta da API (raw):', data);
+    
+    // A API retorna o JSON dentro de um campo "body" como string
+    // Precisamos parsear novamente
+    let apiResponse: MenuHistoryApiResponse;
+    
+    if (data.body && typeof data.body === 'string') {
+      console.log('Parseando body string...');
+      apiResponse = JSON.parse(data.body);
+    } else if (data.success !== undefined) {
+      // Se já veio parseado corretamente
+      apiResponse = data;
+    } else {
+      throw new Error('Formato de resposta inesperado');
+    }
+    
+    console.log('Resposta da API (parseada):', apiResponse);
     
     if (!apiResponse.success) {
       return {
@@ -270,15 +289,19 @@ export async function getMenuDetail(patientId: string, planId: string): Promise<
   
   try {
     // Chamada real para a API
-    const url = `${API_GET_PLAN}?patient_id=${patientId}&plan_id=${planId}`;
-    console.log('Chamando API:', url);
+    console.log('Chamando API:', API_GET_PLAN);
+    console.log('Body:', { patient_id: patientId, plan_id: planId });
     
-    const response = await fetch(url, {
-      method: 'GET',
+    const response = await fetch(API_GET_PLAN, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY,
       },
+      body: JSON.stringify({
+        patient_id: patientId,
+        plan_id: planId
+      })
     });
 
     console.log('Status da resposta:', response.status);
@@ -289,20 +312,31 @@ export async function getMenuDetail(patientId: string, planId: string): Promise<
       throw new Error(`Erro HTTP: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json();
-    console.log('Resposta da API:', data);
+    let data = await response.json();
+    console.log('Resposta da API (raw):', data);
+    
+    // A API pode retornar o JSON dentro de um campo "body" como string
+    let parsedData: any;
+    
+    if (data.body && typeof data.body === 'string') {
+      console.log('Parseando body string...');
+      parsedData = JSON.parse(data.body);
+    } else {
+      parsedData = data;
+    }
+    
+    console.log('Resposta da API (parseada):', parsedData);
     
     // A API pode retornar o plano diretamente ou em uma estrutura
-    // Vamos adaptar conforme necessário
-    if (data.success === false) {
+    if (parsedData.success === false) {
       return {
         success: false,
-        error: data.error || data.message || 'Erro ao buscar detalhes do menu'
+        error: parsedData.error || parsedData.message || 'Erro ao buscar detalhes do menu'
       };
     }
     
-    // Se a resposta tem um campo 'plan', usa ele; senão, assume que data é o plano
-    const plan: MenuPlan = data.plan || data;
+    // Se a resposta tem um campo 'plan', usa ele; senão, assume que parsedData é o plano
+    const plan: MenuPlan = parsedData.plan || parsedData;
     
     console.log('✅ Detalhes do menu carregados com sucesso');
     

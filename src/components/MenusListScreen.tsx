@@ -132,14 +132,15 @@ const MenusListScreen: React.FC<MenusListScreenProps> = ({
 
         {/* Empty State */}
         {menus.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Target className="w-8 h-8 text-gray-400" />
+          <div className="text-center py-12 px-6">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-4xl">📋</span>
             </div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Nenhum menu criado</h3>
-            <p className="text-gray-600 mb-6">
-              Crie seu primeiro menu personalizado para começar sua jornada de bem-estar
+            <h3 className="text-xl font-bold text-gray-800 mb-3">Você ainda não criou um menu alimentar</h3>
+            <p className="text-gray-600 text-base mb-6">
+              Crie agora mesmo clicando no botão abaixo!
             </p>
+            <div className="w-16 h-1 bg-primary/20 rounded-full mx-auto"></div>
           </div>
         )}
       </div>
