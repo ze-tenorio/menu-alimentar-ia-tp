@@ -361,7 +361,7 @@ export async function getMenuDetail(patientId: string, planId: string): Promise<
     
     console.log('Resposta da API (parseada):', parsedData);
     
-    // A API pode retornar o plano diretamente ou em uma estrutura
+    // Verifica se houve erro
     if (parsedData.success === false) {
       return {
         success: false,
@@ -369,10 +369,26 @@ export async function getMenuDetail(patientId: string, planId: string): Promise<
       };
     }
     
-    // Se a resposta tem um campo 'plan', usa ele; senão, assume que parsedData é o plano
-    const plan: MenuPlan = parsedData.plan || parsedData;
+    // A API retorna o plano em data.meal_plan
+    let plan: MenuPlan;
+    
+    if (parsedData.data && parsedData.data.meal_plan) {
+      console.log('Extraindo meal_plan de data.meal_plan');
+      plan = parsedData.data.meal_plan;
+    } else if (parsedData.plan) {
+      console.log('Usando parsedData.plan');
+      plan = parsedData.plan;
+    } else if (parsedData.meal_plan) {
+      console.log('Usando parsedData.meal_plan');
+      plan = parsedData.meal_plan;
+    } else {
+      // Assume que parsedData já é o plano
+      console.log('Usando parsedData como plano direto');
+      plan = parsedData;
+    }
     
     console.log('✅ Detalhes do menu carregados com sucesso');
+    console.log('Plan final:', plan);
     
     return {
       success: true,
