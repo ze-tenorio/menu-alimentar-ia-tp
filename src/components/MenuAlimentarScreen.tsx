@@ -22,12 +22,7 @@ const MenuAlimentarScreen: React.FC<MenuAlimentarScreenProps> = ({
       <div className="bg-gray-800 flex items-center justify-between px-4 py-3">
         <div className="w-6"></div> {/* Spacer */}
         <h1 className="text-white text-lg font-semibold">TotalPass</h1>
-        <button 
-          onClick={onClose}
-          className="text-white hover:text-gray-300 transition-colors"
-        >
-          <X size={24} />
-        </button>
+        <div className="w-6"></div> {/* Spacer para manter centralização */}
       </div>
 
       {/* Main Content */}
