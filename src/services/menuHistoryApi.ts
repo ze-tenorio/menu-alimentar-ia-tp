@@ -24,7 +24,7 @@ const API_KEY = import.meta.env.VITE_API_KEY;
 export interface HistoricalPlan {
   plan_id: string;
   created_at: string; // ISO format
-  objective: 'emagrecimento' | 'ganho_de_peso' | 'manutencao';
+  objective: 'emagrecimento' | 'ganho_de_peso' | 'manutencao' | 'weight_loss' | 'muscle_gain' | 'maintenance';
   current_weight: number;
   total_calories: number;
   age: number;
@@ -135,25 +135,59 @@ const MOCK_API_RESPONSES: Record<string, MenuHistoryApiResponse> = {
  * Converte um plano da API para o formato de exibição
  */
 function convertPlanToSummary(plan: HistoricalPlan, patientId: string): MenuSummary {
-  const objectiveMap = {
+  const objectiveMap: Record<string, { title: string; text: string; type: 'weight_loss' | 'muscle_gain' | 'maintenance' }> = {
+    // Português (esperado originalmente)
     'emagrecimento': {
       title: 'Menu Emagrecimento',
       text: 'Perda de Peso e Definição',
-      type: 'weight_loss' as const
+      type: 'weight_loss'
     },
     'ganho_de_peso': {
       title: 'Menu Ganho de Massa',
       text: 'Ganho de Peso e Massa Muscular',
-      type: 'muscle_gain' as const
+      type: 'muscle_gain'
     },
     'manutencao': {
       title: 'Menu Manutenção',
       text: 'Manutenção de Peso e Saúde Geral',
-      type: 'maintenance' as const
+      type: 'maintenance'
+    },
+    // Inglês (retornado pela API real)
+    'weight_loss': {
+      title: 'Menu Emagrecimento',
+      text: 'Perda de Peso e Definição',
+      type: 'weight_loss'
+    },
+    'muscle_gain': {
+      title: 'Menu Ganho de Massa',
+      text: 'Ganho de Peso e Massa Muscular',
+      type: 'muscle_gain'
+    },
+    'maintenance': {
+      title: 'Menu Manutenção',
+      text: 'Manutenção de Peso e Saúde Geral',
+      type: 'maintenance'
     }
   };
 
   const objectiveInfo = objectiveMap[plan.objective];
+  
+  // Se não encontrou no mapa, usar padrão
+  if (!objectiveInfo) {
+    console.warn(`Objetivo desconhecido: ${plan.objective}, usando padrão 'maintenance'`);
+    return {
+      id: plan.plan_id,
+      patient_id: patientId,
+      title: 'Menu Personalizado',
+      objective: 'Objetivo Personalizado',
+      date: new Date(plan.created_at).toLocaleDateString('pt-BR'),
+      type: 'maintenance',
+      daily_energy_kcal: plan.total_calories,
+      created_at: plan.created_at,
+      current_weight: plan.current_weight,
+      age: plan.age
+    };
+  }
   
   // Formata a data para exibição
   const date = new Date(plan.created_at);
