@@ -7,6 +7,18 @@
 import { MenuPlan } from './menuApi';
 
 /**
+ * URLs da API - Produção
+ */
+const API_BASE_URL = 'https://kpg71puaqk.execute-api.us-east-2.amazonaws.com/prd';
+const API_LIST_PLANS = `${API_BASE_URL}/list-plans`;
+const API_GET_PLAN = `${API_BASE_URL}/get-plan`;
+
+/**
+ * API Key para autenticação
+ */
+const API_KEY = import.meta.env.VITE_API_KEY;
+
+/**
  * Formato do plano retornado pela API de histórico
  */
 export interface HistoricalPlan {
@@ -166,63 +178,51 @@ function convertPlanToSummary(plan: HistoricalPlan, patientId: string): MenuSumm
  * 
  * @param cpf - CPF do paciente (apenas números)
  * @returns Promise com lista de menus do paciente
- * 
- * TODO: Substituir por chamada real da API quando estiver pronta
- * Endpoint futuro: GET /api/menus/history?patient_id={cpf}
  */
 export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> {
   console.log('Buscando histórico de menus para CPF:', cpf);
+  console.log('API Key configurada:', !!API_KEY);
   
-  // Simula delay de rede
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  if (!API_KEY) {
+    console.error('⚠️ ATENÇÃO: API Key não está configurada!');
+    return {
+      success: false,
+      menus: [],
+      total: 0,
+      error: 'API Key não configurada'
+    };
+  }
   
   try {
-    // TODO: Substituir por chamada real quando a API estiver pronta
-    // const response = await fetch(`${API_URL}/menus/history?patient_id=${cpf}`, {
-    //   method: 'GET',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'x-api-key': API_KEY,
-    //   },
-    // });
-    // const apiResponse: MenuHistoryApiResponse = await response.json();
+    // Chamada real para a API
+    const url = `${API_LIST_PLANS}?patient_id=${cpf}`;
+    console.log('Chamando API:', url);
     
-    // Mock: buscar menus do CPF usando o formato da API real
-    let apiResponse = MOCK_API_RESPONSES[cpf];
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+      },
+    });
+
+    console.log('Status da resposta:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Erro na resposta da API:', errorText);
+      throw new Error(`Erro HTTP: ${response.status} - ${errorText}`);
+    }
+
+    const apiResponse: MenuHistoryApiResponse = await response.json();
+    console.log('Resposta da API:', apiResponse);
     
-    // Para testes: se não encontrar o CPF específico, retorna menus de exemplo
-    if (!apiResponse) {
-      console.log(`CPF ${cpf} não encontrado no mock, retornando menus de exemplo`);
-      apiResponse = {
-        success: true,
-        patient_id: cpf,
-        total_plans: 3,
-        plans: [
-          {
-            plan_id: `${cpf}-plan-001`,
-            created_at: '2025-11-20T14:30:00.000000',
-            objective: 'emagrecimento',
-            current_weight: 85.5,
-            total_calories: 1800.0,
-            age: 35
-          },
-          {
-            plan_id: `${cpf}-plan-002`,
-            created_at: '2025-11-15T09:15:00.000000',
-            objective: 'manutencao',
-            current_weight: 78.0,
-            total_calories: 2200.0,
-            age: 35
-          },
-          {
-            plan_id: `${cpf}-plan-003`,
-            created_at: '2025-11-10T16:45:00.000000',
-            objective: 'ganho_de_peso',
-            current_weight: 72.0,
-            total_calories: 2800.0,
-            age: 34
-          }
-        ]
+    if (!apiResponse.success) {
+      return {
+        success: false,
+        menus: [],
+        total: 0,
+        error: 'API retornou sucesso = false'
       };
     }
     
@@ -231,7 +231,7 @@ export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> 
       convertPlanToSummary(plan, cpf)
     );
     
-    console.log(`Encontrados ${menus.length} menus para o CPF ${cpf}:`, menus);
+    console.log(`✅ Encontrados ${menus.length} menus para o CPF ${cpf}`);
     
     return {
       success: true,
@@ -239,7 +239,7 @@ export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> 
       total: apiResponse.total_plans
     };
   } catch (error) {
-    console.error('Erro ao buscar histórico:', error);
+    console.error('❌ Erro ao buscar histórico:', error);
     return {
       success: false,
       menus: [],
@@ -252,38 +252,66 @@ export async function getMenuHistory(cpf: string): Promise<MenuHistoryResponse> 
 /**
  * Busca os detalhes completos de um menu específico
  * 
- * @param menuId - ID do menu
+ * @param patientId - CPF do paciente (apenas números)
+ * @param planId - ID do plano
  * @returns Promise com os detalhes completos do menu
- * 
- * TODO: Substituir por chamada real da API quando estiver pronta
- * Endpoint futuro: GET /api/menus/{menuId}
  */
-export async function getMenuDetail(menuId: string): Promise<MenuDetailResponse> {
-  console.log('Buscando detalhes do menu:', menuId);
+export async function getMenuDetail(patientId: string, planId: string): Promise<MenuDetailResponse> {
+  console.log('Buscando detalhes do menu:', { patientId, planId });
+  console.log('API Key configurada:', !!API_KEY);
   
-  // Simula delay de rede
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  try {
-    // TODO: Substituir por chamada real
-    // const response = await fetch(`${API_URL}/menus/${menuId}`, {
-    //   method: 'GET',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'x-api-key': API_KEY,
-    //   },
-    // });
-    
-    // Mock: retornar dados de exemplo
-    // Na implementação real, isso virá da API
-    console.log('Retornando detalhes mock do menu');
-    
+  if (!API_KEY) {
+    console.error('⚠️ ATENÇÃO: API Key não está configurada!');
     return {
       success: false,
-      error: 'Função de detalhes ainda não implementada. Use o menu recém-criado.'
+      error: 'API Key não configurada'
+    };
+  }
+  
+  try {
+    // Chamada real para a API
+    const url = `${API_GET_PLAN}?patient_id=${patientId}&plan_id=${planId}`;
+    console.log('Chamando API:', url);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+      },
+    });
+
+    console.log('Status da resposta:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Erro na resposta da API:', errorText);
+      throw new Error(`Erro HTTP: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('Resposta da API:', data);
+    
+    // A API pode retornar o plano diretamente ou em uma estrutura
+    // Vamos adaptar conforme necessário
+    if (data.success === false) {
+      return {
+        success: false,
+        error: data.error || data.message || 'Erro ao buscar detalhes do menu'
+      };
+    }
+    
+    // Se a resposta tem um campo 'plan', usa ele; senão, assume que data é o plano
+    const plan: MenuPlan = data.plan || data;
+    
+    console.log('✅ Detalhes do menu carregados com sucesso');
+    
+    return {
+      success: true,
+      plan: plan
     };
   } catch (error) {
-    console.error('Erro ao buscar detalhes do menu:', error);
+    console.error('❌ Erro ao buscar detalhes do menu:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Erro desconhecido'

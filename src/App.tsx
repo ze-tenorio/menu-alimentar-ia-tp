@@ -8,7 +8,7 @@ import MenusListScreen from "./components/MenusListScreen";
 import ShoppingListScreen from "./components/ShoppingListScreen";
 import CpfEntryScreen from "./components/CpfEntryScreen";
 import { generateMenu, MenuPlan } from "./services/menuApi";
-import { getMenuHistory, MenuSummary } from "./services/menuHistoryApi";
+import { getMenuHistory, getMenuDetail, MenuSummary } from "./services/menuHistoryApi";
 
 const App = () => {
   const [showTransition, setShowTransition] = useState(true);
@@ -186,9 +186,12 @@ const App = () => {
   };
 
   const handleViewMenu = async (menuId: string) => {
+    console.log('handleViewMenu chamado com menuId:', menuId);
+    
     // Primeiro tenta encontrar nos menus criados nesta sessão
     const localMenu = createdMenus.find(m => m.id === menuId);
     if (localMenu) {
+      console.log('Menu encontrado localmente:', localMenu);
       setFormData({ 
         nutritional_plan_goals: { 
           primary_objective: getObjectiveId(localMenu.type) 
@@ -200,17 +203,41 @@ const App = () => {
       return;
     }
     
-    // Se não encontrou localmente, é um menu histórico
-    // TODO: Quando a API estiver pronta, buscar detalhes do menu
-    console.log('Buscar detalhes do menu histórico:', menuId);
-    alert('Visualização de menus históricos será implementada quando a API estiver pronta.');
+    // Se não encontrou localmente, é um menu histórico - buscar da API
+    console.log('Menu histórico, buscando detalhes da API...');
+    console.log('Patient ID (CPF):', userCpf);
+    console.log('Plan ID:', menuId);
     
-    // const result = await getMenuDetail(menuId);
-    // if (result.success && result.plan) {
-    //   setCurrentMenu(result.plan);
-    //   setShowMenusList(false);
-    //   setShowGeneratedMenu(true);
-    // }
+    if (!userCpf) {
+      console.error('CPF não encontrado!');
+      alert('Erro: CPF não encontrado. Por favor, tente novamente.');
+      return;
+    }
+    
+    setShowMenusList(false);
+    setLoadingType('loading-history');
+    setShowMenuLoading(true);
+    
+    try {
+      const result = await getMenuDetail(userCpf, menuId);
+      
+      if (result.success && result.plan) {
+        console.log('✅ Detalhes do menu carregados:', result.plan);
+        setCurrentMenu(result.plan);
+        setShowMenuLoading(false);
+        setShowGeneratedMenu(true);
+      } else {
+        console.error('❌ Erro ao buscar detalhes:', result.error);
+        alert('Erro ao carregar menu: ' + (result.error || 'Erro desconhecido'));
+        setShowMenuLoading(false);
+        setShowMenusList(true);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao buscar detalhes do menu:', error);
+      alert('Erro ao carregar menu. Por favor, tente novamente.');
+      setShowMenuLoading(false);
+      setShowMenusList(true);
+    }
   };
 
   const handleShowShoppingList = () => {
